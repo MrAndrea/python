@@ -13,28 +13,50 @@ import logging
 import datetime
 import re
 
-print('\n-------------------------------------------------\nChecking COM ports...')
+# -------------------------------------------------------------------------
+valid = False
+com_menu = 1
+com_list = []
+print('\n-------------------------------------------------');
+print('Checking COM ports...')
 ports = list( portlist.comports() )
 for p in ports:
-  print(p)
+  print('[',com_menu,']: ', p)
+  com_menu+=1
+  com_list.append(p.device)
 
-sample_number = input("\n-------------------------------------------------\nEnter number of sample: ")
+while not valid: #loop until the user enters a valid int
+    try:
+        print('\n-------------------------------------------------');
+        com_menu = int(input("Choose the COM port: "))
+        if com_menu>=1 and com_menu<=len(com_list):
+            com_port = com_list[com_menu-1]
+            break
+            valid = True #if this point is reached, x is a valid int
+        else: 
+            print('Please only input number in the brackets')
+    except ValueError:
+        print('Please only input digits')
+
+# -------------------------------------------------------------------------
+print('\n-------------------------------------------------');
+sample_number = input("Enter number of samples: ")
 
 filelog = 'dataDSP6001.txt'
 titlelog = "#\tTime\tSpeed\tTorque\tRotation\n"
-COMport = 'COM3'
 TX_messages = ["OD\r\n"]
 
 with open(filelog, 'w') as f:
 	f.write(titlelog)
 
 # Set up serial port for read
-serialPort = serial.Serial( port=COMport, baudrate=19200, bytesize=8, timeout=1, stopbits=serial.STOPBITS_ONE )
+serialPort = serial.Serial( port=com_port, baudrate=19200, bytesize=8, timeout=1, stopbits=serial.STOPBITS_ONE )
 
-print('\n-------------------------------------------------\nStarting Serial Port', COMport)
+print('\n-------------------------------------------------');
+print('Starting Serial Port', com_port)
 
 with open(filelog, 'a') as f:
-    for x in range(0, int(sample_number)):
+    for x in range(1, int(sample_number)+1):
         print('Message',x,'of',sample_number, end='\r')
         for msg in TX_messages:
             serialPort.write( msg.encode() )
@@ -45,8 +67,8 @@ with open(filelog, 'a') as f:
                 date = datetime.now().strftime("%H:%M:%S,%f")[:-3]
                 f.write(repr(x) + '\t' + date + '\t' + dps6001_data[1] + '\t' + dps6001_data[2] + '\t' + data.decode()[12] + '\n')
             
-print('\nClosing Serial Port',COMport,'\n')
-print('-------------------------------------------------\n')
+print('\nClosing Serial Port',com_port,'\n')
+print('-------------------------------------------------')
 print(filelog,'ready\n')
 serialPort.close()
 
