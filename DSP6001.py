@@ -1,4 +1,10 @@
-# serial_test.py
+# -------------------------------------------------------------------------
+# IIT - iCub Tech 2022
+# Basic script for acquiring data from DSP6001 Dynamometer Controller
+#
+# Written by A. Mura
+# <andrea.mura@iit.it>
+# -------------------------------------------------------------------------
 
 import sys, time
 import serial.tools.list_ports as portlist
@@ -7,39 +13,40 @@ import logging
 import datetime
 import re
 
+print('\n-------------------------------------------------\nChecking COM ports...')
 ports = list( portlist.comports() )
 for p in ports:
   print(p)
 
+sample_number = input("\n-------------------------------------------------\nEnter number of sample: ")
 
-# This will hold received UART data
-data = ""
-stopMessage = "STOP\n"
-
-titlelog = "#  Time          Speed  Torque  Rotation\n"
+filelog = 'dataDSP6001.txt'
+titlelog = "#\tTime\tSpeed\tTorque\tRotation\n"
+COMport = 'COM3'
 TX_messages = ["OD\r\n"]
-#TX_messages = ["S 1728T22.60L"]
 
-with open('dataDSP6001.txt', 'w') as f:
+with open(filelog, 'w') as f:
 	f.write(titlelog)
 
 # Set up serial port for read
-serialPort = serial.Serial( port="COM6", baudrate=19200, bytesize=8, timeout=.5, stopbits=serial.STOPBITS_ONE )
+serialPort = serial.Serial( port=COMport, baudrate=19200, bytesize=8, timeout=1, stopbits=serial.STOPBITS_ONE )
 
-print( '\nStarting Serial Port Send' )
+print('\n-------------------------------------------------\nStarting Serial Port', COMport)
 
-with open('dataDSP6001.txt', 'a') as f:
-    for x in range(0, 3):
+with open(filelog, 'a') as f:
+    for x in range(0, int(sample_number)):
+        print('Message',x,'of',sample_number, end='\r')
         for msg in TX_messages:
             serialPort.write( msg.encode() )
             data = serialPort.readline()
-            if len(data) == 13:
+            if len(data) == 15:
                 dps6001_data = re.split("[S,T,R,L]", ''.join(data.decode()))
                 from datetime import datetime
                 date = datetime.now().strftime("%H:%M:%S,%f")[:-3]
-                f.write(repr(x) + '  ' + date + '  ' + dps6001_data[1] + '   ' + dps6001_data[2] + '  ' + data.decode()[12] + '\n')
+                f.write(repr(x) + '\t' + date + '\t' + dps6001_data[1] + '\t' + dps6001_data[2] + '\t' + data.decode()[12] + '\n')
             
-print('Closing Serial Port Send')
+print('\nClosing Serial Port',COMport,'\n')
+print('-------------------------------------------------\n')
+print(filelog,'ready\n')
 serialPort.close()
-
 
