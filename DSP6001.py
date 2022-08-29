@@ -12,6 +12,7 @@ import serial
 import logging
 import datetime
 import re
+import matplotlib.pyplot as plt
 
 # -------------------------------------------------------------------------
 # General
@@ -38,6 +39,9 @@ dsp6001_end = "\r\n"
 # -------------------------------------------------------------------------
 def data_acquisition():
     global com_port
+    time = []
+    torque = []
+    speed = []
     valid = False
     while not valid: #loop until the user enters a valid int
         try:
@@ -66,9 +70,18 @@ def data_acquisition():
                     from datetime import datetime
                     date = datetime.now().strftime("%H:%M:%S,%f")[:-3]
                     f.write(repr(x) + '\t' + date + '\t' + dps6001_data[1] + '\t' + dps6001_data[2] + '\t' + data.decode()[12] + '\n')
+                    time.append(date)
+                    speed.append(dps6001_data[1])
+                    torque.append(dps6001_data[2])
     close_serial_port(serialPort, com_port)            
     print(filelog,'ready')
-
+    plt.plot(time, speed, label = "speed")
+    plt.plot(time, torque, label = "torque")
+    plt.xlabel('time [s]')
+    plt.ylabel('[Nmm]')
+    plt.title('MAGTROL data')
+    plt.legend()
+    plt.show()
 # -------------------------------------------------------------------------
 # Send command to Magtrol
 # -------------------------------------------------------------------------
@@ -163,4 +176,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
