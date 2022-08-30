@@ -13,6 +13,9 @@ import logging
 import datetime
 import re
 import matplotlib.pyplot as plt
+from datetime import datetime
+from termcolor import colored
+from colorama import init
 
 # -------------------------------------------------------------------------
 # General
@@ -30,7 +33,8 @@ dsp6001_cmd = [
     "*IDN?",         # Returns Magtrol Identification and software revision
     "OD",            # Prompts to return speed-torque-direction data string
     "PR",            # 
-    "Custom"         # 
+    "Custom",        # 
+    "Quit"           # Exit
     ]
 dsp6001_end = "\r\n"
 
@@ -67,8 +71,7 @@ def data_acquisition():
                 data = serialPort.readline()
                 if len(data) == 15:
                     dps6001_data = re.split("[S,T,R,L]", ''.join(data.decode()))
-                    from datetime import datetime
-                    date = datetime.now().strftime("%H:%M:%S,%f")[:-3]
+                    date = datetime.now().strftime("%H:%M:%S.%f")[:-3]
                     f.write(repr(x) + '\t' + date + '\t' + dps6001_data[1] + '\t' + dps6001_data[2] + '\t' + data.decode()[12] + '\n')
                     time.append(date)
                     speed.append(dps6001_data[1])
@@ -91,7 +94,7 @@ def send_cmd_magtrol(com_menu):
     serialPort = open_serial_port(com_port)
     for msg in TX_messages:
         serialPort.write(msg.encode())
-        print('Magtrol says:', serialPort.readline().decode())
+        print(colored('\nMagtrol says:', 'yellow'), serialPort.readline().decode())
     close_serial_port(serialPort, com_port) 
     
 # -------------------------------------------------------------------------
@@ -121,7 +124,7 @@ def scan_com_port():
     com_list = []
     print('-------------------------------------------------');
     print('Scan COM ports...')
-    ports = list( portlist.comports() )
+    ports = list(portlist.comports())
     for p in ports:
       print('[',com_menu,']: ', p)
       com_menu+=1
@@ -147,8 +150,8 @@ def input_keyboard(list):
     #menu = 1
     while not valid: #loop until the user enters a valid int
         try:
-            #print('-------------------------------------------------');
-            menu = int(input("\nChoose menu: "))
+            print(colored('Choose menu:  ', 'green'), end='\b')
+            menu = int(input())
             if menu>=1 and menu<=len(list):
                 menu = list[menu-1]
                 return menu
@@ -164,15 +167,18 @@ def input_keyboard(list):
 # main
 # -------------------------------------------------------------------------
 def main():
+    init()
+    print('-------------------------------------------------');
+    print(colored('         MAGTROL DSP6001 control script          ', 'white', 'on_green'))
     scan_com_port()
     input_command()
     if cmd_menu == 'OD':
         data_acquisition()
     elif cmd_menu == 'Custom':
-        message_send = input("\nType the command to send: ")
+        print(colored('Type the command to send:  ', 'green'), end='\b')
+        message_send = input()
         send_cmd_magtrol(message_send)
     else:
         send_cmd_magtrol(cmd_menu)
-
 if __name__ == "__main__":
     main()
