@@ -26,6 +26,13 @@ com_menu = 1
 cmd_menu = 1
 com_port = ''
 
+class dsp6001:
+    def __init__(self, prog, time, speed, torque):
+        self.time = prog
+        self.time = time
+        self.speed = speed
+        self.torque = torque
+
 # -------------------------------------------------------------------------
 # DSP6001 COMMAND SET
 # -------------------------------------------------------------------------
@@ -43,6 +50,7 @@ dsp6001_end = "\r\n"
 # -------------------------------------------------------------------------
 def data_acquisition():
     global com_port
+    sample = []
     time = []
     torque = []
     speed = []
@@ -73,6 +81,8 @@ def data_acquisition():
                     dps6001_data = re.split("[S,T,R,L]", ''.join(data.decode()))
                     date = datetime.now().strftime("%H:%M:%S.%f")[:-3]
                     f.write(repr(x) + '\t' + date + '\t' + dps6001_data[1] + '\t' + dps6001_data[2] + '\t' + data.decode()[12] + '\n')
+                    sample.append(dsp6001(repr(x), date, dps6001_data[1], dps6001_data[2]))
+                    print('>',sample[x].prog,'>',sample[x].time,'>',sample[x].speed,'>',sample[x].torque,'<',)
                     time.append(date)
                     speed.append(dps6001_data[1])
                     torque.append(dps6001_data[2])
@@ -84,7 +94,7 @@ def data_acquisition():
     plt.ylabel('[Nmm]')
     plt.title('MAGTROL data')
     plt.legend()
-    plt.show()
+    #plt.show()
 # -------------------------------------------------------------------------
 # Send command to Magtrol
 # -------------------------------------------------------------------------
