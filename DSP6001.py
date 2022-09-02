@@ -88,14 +88,32 @@ def data_acquisition():
                     f.write(sample[x-1].prog + '\t' + sample[x-1].time + '\t' + sample[x-1].speed + '\t' + sample[x-1].torque + '\t' + sample[x-1].rotation + '\t' + sample[x-1].freq + '\n')
     close_serial_port(serialPort, com_port)            
     print(filelog,'ready')
+
+    #plot_data(sample)
     
-    #plt.plot(time, sample.speed, label = "speed")
-    #plt.plot(time, sample.torque, label = "torque")
-    #plt.xlabel('time [s]')
-    #plt.ylabel('[Nmm]')
-    #plt.title('MAGTROL data')
-    #plt.legend()
-    #plt.show()
+# -------------------------------------------------------------------------
+# Plot data
+# -------------------------------------------------------------------------
+def plot_data(var):
+    time = []
+    torque = []
+    speed = []
+    for obj in var: time.append(obj.time)
+    for obj in var: speed.append(obj.speed)
+    for obj in var: torque.append(obj.torque)
+    
+    plt.plot(time, speed, label = "speed")
+    plt.plot(time, torque, label = "torque")
+    plt.xlabel('time [s]')
+    plt.ylabel('[Nmm]')
+    plt.title('MAGTROL data')
+    plt.legend()
+    plt.grid(True)
+    plt.draw()
+    plt.pause(2.001)
+    #input("Press [enter] to continue.")
+    #plt.show(block=False)  
+    
 # -------------------------------------------------------------------------
 # Send command to Magtrol
 # -------------------------------------------------------------------------
