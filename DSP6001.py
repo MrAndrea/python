@@ -28,12 +28,13 @@ com_port = ''
 # Answer format 'S    0T0.488R\r\n'
 
 class dsp6001:
-    def __init__(self, prog, time, speed, torque, rotation):
+    def __init__(self, prog, time, speed, torque, rotation, freq):
         self.prog = prog
         self.time = time
         self.speed = speed
         self.torque = torque
         self.rotation = rotation
+        self.freq = freq
         
 # -------------------------------------------------------------------------
 # DSP6001 COMMAND SET
@@ -42,6 +43,8 @@ dsp6001_cmd = [
     "*IDN?",         # Returns Magtrol Identification and software revision
     "OD",            # Prompts to return speed-torque-direction data string
     "PR",            # 
+    "Q#",            # 
+    "N#",            # 
     "Custom",        # 
     "Quit"           # Exit
     ]
@@ -57,7 +60,8 @@ def data_acquisition():
     while not valid: #loop until the user enters a valid int
         try:
             print('-------------------------------------------------');
-            sample_number = int(input("Enter number of samples: "))
+            print(colored('Enter number of samples:  ', 'green'), end='\b')
+            sample_number = int(input())
             break
             valid = True
         except ValueError:
@@ -76,11 +80,12 @@ def data_acquisition():
             for msg in TX_messages:
                 serialPort.write( msg.encode() )
                 data = serialPort.readline()
-                if len(data) == 15:
-                    dps6001_data = re.split("[S,T,R,L]", ''.join(data.decode()))
+                data = "S    0T0.488R\r\n"      # fake message
+                if re.search("^S.+T.+R.+",data):
+                    dps6001_data = re.split("[S,T,R,L]", ''.join(data))
                     date = datetime.now().strftime("%H:%M:%S.%f")[:-3]
-                    sample.append(dsp6001(repr(x), date, dps6001_data[1], dps6001_data[2], data.decode()[12]))
-                    f.write(sample[x-1].prog + '\t' + sample[x-1].time + '\t' + sample[x-1].speed + '\t' + sample[x-1].torque + '\t' + sample[x-1].rotation + '\n')
+                    sample.append(dsp6001(repr(x), date, dps6001_data[1], dps6001_data[2], data[12], "f"))
+                    f.write(sample[x-1].prog + '\t' + sample[x-1].time + '\t' + sample[x-1].speed + '\t' + sample[x-1].torque + '\t' + sample[x-1].rotation + '\t' + sample[x-1].freq + '\n')
     close_serial_port(serialPort, com_port)            
     print(filelog,'ready')
     
