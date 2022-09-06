@@ -80,7 +80,7 @@ def data_acquisition():
             for msg in TX_messages:
                 serialPort.write( msg.encode() )
                 data = serialPort.readline()
-                data = "S    0T0.488R\r\n"      # fake message
+                #data = "S    0T0.488R\r\n"      # fake message
                 if re.search("^S.+T.+R.+",data):
                     dps6001_data = re.split("[S,T,R,L]", ''.join(data))
                     date = datetime.now().strftime("%H:%M:%S.%f")[:-3]
