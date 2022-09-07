@@ -165,7 +165,9 @@ def scan_com_port():
 # -------------------------------------------------------------------------
 def input_command():
     global cmd_menu
+    cmd_menu=1
     print('-------------------------------------------------');
+    print('List of commands:')
     for p in dsp6001_cmd:
       print('[',cmd_menu,']: ', p)
       cmd_menu+=1
@@ -197,17 +199,19 @@ def input_keyboard(list):
 # -------------------------------------------------------------------------
 def main():
     init()
+    global cmd_menu
     print('-------------------------------------------------');
     print(colored('         MAGTROL DSP6001 control script          ', 'white', 'on_green'))
     scan_com_port()
-    input_command()
-    if cmd_menu == 'OD':
-        data_acquisition()
-    elif cmd_menu == 'Custom':
-        print(colored('Type the command to send:  ', 'green'), end='\b')
-        message_send = input()
-        send_cmd_magtrol(message_send)
-    else:
-        send_cmd_magtrol(cmd_menu)
+    while cmd_menu!='Quit': 
+        input_command()
+        if cmd_menu == 'OD':
+            data_acquisition()
+        elif cmd_menu == 'Custom':
+            print(colored('Type the command to send:  ', 'green'), end='\b')
+            message_send = input()
+            send_cmd_magtrol(message_send)
+        else:
+            send_cmd_magtrol(cmd_menu)
 if __name__ == "__main__":
     main()
